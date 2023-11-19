@@ -1,83 +1,68 @@
 import React, { useState, useEffect } from "react";
-import { useGeolocated } from "react-geolocated";
 
 const LocationTracker = () => {
   const [locationData, setLocationData] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [number,setNumber] = useState(0)
 
-  const {
-    coords,
-    isGeolocationAvailable,
-    isGeolocationEnabled,
-  } = useGeolocated({
-    positionOptions: {
-      enableHighAccuracy: false,
-    },
-    userDecisionTimeout: 5000,
-  });
+  const successCallback = (position) => {
+    const coords = position.coords;
+    setLocationData({
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      altitude: coords.altitude,
+      heading: coords.heading,
+      speed: coords.speed,
+      accuracy: coords.accuracy,
+    });
+    setLastUpdated(new Date());
+  };
 
-  // Update the locationData state and log the coordinates to the console every second
+  const errorCallback = (error) => {
+    console.error("Error getting location:", error);
+  };
+
   useEffect(() => {
-    const updateInterval = setInterval(() => {
-      if (coords) {
-        setLocationData({
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          altitude: coords.altitude,
-          heading: coords.heading,
-          speed: coords.speed,
-        });
+    // Set up a listener for continuous location updates
+    const watchId = navigator.geolocation.watchPosition(
+      successCallback,
+      errorCallback,
+      { enableHighAccuracy: true }
+    );
 
-        // Update the lastUpdated time
-        setLastUpdated(new Date());
-        setNumber(prev=>prev+1)
-        console.log(coords)
-      }
-    }, 1000);
+    // Clean up the watchPosition listener on component unmount
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
 
-    // Clear the interval on component unmount
-    return () => clearInterval(updateInterval);
-  }, [coords]);
-
-  // Check for geolocation availability and enabled status
-  if (!isGeolocationAvailable) {
-    return <div>Your browser does not support Geolocation</div>;
-  }
-
-  if (!isGeolocationEnabled) {
-    return <div>Geolocation is not enabled</div>;
-  }
-
-  // Check if locationData is available, if not, show loading message
-  if (!locationData) {
-    return <div>Getting the location data&hellip;</div>;
-  }
-
-  // Render the location data table and lastUpdated time
+  // Render the location data table, lastUpdated time, and fetch location button
   return (
     <div>
       <table>
         <tbody>
           <tr>
             <td>latitude</td>
-            <td>{locationData.latitude}</td>
+            <td>{locationData?.latitude || "N/A"}</td>
           </tr>
           <tr>
             <td>longitude</td>
-            <td>{locationData.longitude}</td>
+            <td>{locationData?.longitude || "N/A"}</td>
           </tr>
           <tr>
             <td>altitude</td>
-            <td>{locationData.altitude}</td>
+            <td>{locationData?.altitude || "N/A"}</td>
           </tr>
           <tr>
             <td>heading</td>
-            <td>{locationData.heading}</td>
+            <td>{locationData?.heading || "N/A"}</td>
           </tr>
           <tr>
-            <td>speed {number}</td>
-            <td>{locationData.speed}</td>
+            <td>speed</td>
+            <td>{locationData?.speed || "N/A"}</td>
+          </tr>
+          <tr>
+            <td>accuracy</td>
+            <td>{locationData?.accuracy || "N/A"}</td>
           </tr>
         </tbody>
       </table>
