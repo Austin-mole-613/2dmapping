@@ -1,10 +1,12 @@
+"use client"
+
 // components/Floorplan.js
 import React from 'react';
 
 const Floorplan = ({ floorplanImage, deviceLatitude, deviceLongitude }) => {
   return (
     <div>
-      <img src={floorplanImage} alt="Floorplan" />
+      <img src={floorplanImage} alt="Floorplan" style={{width:"200px"}}/>
       <div
         style={{
           position: 'absolute',
